@@ -19,8 +19,15 @@ The workflow:
 
  - Detects shallow, reef-like bathymetry structures using depth–slope morphological filters
 
-- Exports processed layers as compressed GeoParquets, suitable for large-scale analytics
+- Exports processed layers as compressed GeoTIFFs and GeoParquets, suitable for large-scale analytics
 
 - Generates geographic visualizations integrating all layers
 
-This repo showcases the end-to-end technical workflow needed to perform global-scale bathymetry–terrain harmonization and hydrologic vector generation.
+### Study Area & Data
+The demonstration focuses on a subsection of Puget Sound (Mt. Vernon → Olympia), using:
+
+- GEBCO 2025 regional bathymetry (40–50°N, 130–120°W)
+
+- HydroSHEDS/HydroBASINS terrain and watershed boundaries
+
+- Synthetic outlet hydrodynamics for illustrative purposes

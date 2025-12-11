@@ -1,2 +1,26 @@
-# bathymetry_demo
+# Topobathymetry + Watershed Integration Pipeline
 Workflow integrating bathymetry and HydroBASINS data to compute topobathymetry, slopes, reef-like shallow features, and watershed outlet momentum vectors.
+
+### Overview
+
+This repository contains a geospatial processing pipeline that integrates regional bathymetry, HydroSHEDS terrain, and HydroBASINS watershed boundaries to produce harmonized topobathymetric surfaces, terrain slopes, shallow-reef morphological features, and watershed outlet discharge/momentum vectors.
+
+The workflow:
+
+- Aligns GEBCO 2025 bathymetry with HydroSHEDS DEMs
+
+- Constructs a fused topobathymetric DEM with consistent CRS, nodata handling, and aligned grids
+
+- Computes terrain slopes from the merged DEM
+
+- Identifies basin–sea outlet points via raster-to-vector water boundary intersection
+
+- Derives synthetic discharge, velocity, and momentum vectors for each watershed outlet
+
+ - Detects shallow, reef-like bathymetry structures using depth–slope morphological filters
+
+- Exports processed layers as compressed GeoParquets, suitable for large-scale analytics
+
+- Generates geographic visualizations integrating all layers
+
+This repo showcases the end-to-end technical workflow needed to perform global-scale bathymetry–terrain harmonization and hydrologic vector generation.

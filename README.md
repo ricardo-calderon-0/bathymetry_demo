@@ -136,7 +136,9 @@ and writes:
 
 # Folder Structure
 
+```
 data/
-├── raw/            # User-downloaded datasets (not included)
-├── intermediate/   # Auto-generated GeoTIFF/Parquet layers
-└── processed/      # Final plot + cleaned basin/reef outputs
+├── raw/ # User-downloaded datasets (not included)
+├── intermediate/ # Auto-generated GeoTIFF/Parquet layers
+└── processed/ # Final plot + cleaned basin/reef outputs
+```

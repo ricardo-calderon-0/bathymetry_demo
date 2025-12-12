@@ -26,7 +26,7 @@ The workflow:
 ### Study Area & Data
 The demonstration focuses on a subsection of Puget Sound (Mt. Vernon → Olympia), using:
 
-- GEBCO 2025 regional bathymetry (40–50°N, 130–120°W)
+- NOAA regional bathymetry
 
 - HydroSHEDS/HydroBASINS terrain and watershed boundaries
 

@@ -7,7 +7,7 @@ This repository contains a geospatial processing pipeline that integrates region
 
 The workflow:
 
-- Aligns GEBCO 2025 bathymetry with HydroSHEDS DEMs
+- Aligns NOAA bathymetry with HydroSHEDS DEMs
 
 - Constructs a fused topobathymetric DEM with consistent CRS, nodata handling, and aligned grids
 

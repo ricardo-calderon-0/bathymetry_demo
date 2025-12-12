@@ -1,5 +1,6 @@
 # main.py
 from processing import (
+    cdf_to_geotiff,
     build_topobathy,
     process_basins_and_outlets,
     compute_slope_and_zonal_stats,
@@ -11,6 +12,8 @@ from plotting import plot_qc_map
 
 
 def main() -> None:
+    cdf_to_geotiff()
+
     # 1. Topobathy
     bathy, topobathy_clean = build_topobathy()
 

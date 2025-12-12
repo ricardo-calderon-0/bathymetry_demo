@@ -4,7 +4,7 @@ import os
 # Paths
 BATHY_RAW_PATH = "data/raw/bathymetry/puget_sound_p290_30m.nc"
 BATHY_PATH = "data/intermediate/bathymetry/puget_sound_bathy_utm.tif"
-HYDRO_PATH = "data/raw/hydrosheds/n40w130_con.tif"
+HYDRO_PATH = "data/raw/hydrosheds/n40w120_con.tif"
 BASINS_PATH = "data/raw/hydrobasins/hybas_na_lev06_v1c.shp"
 
 TOPO_PATH = "data/intermediate/topobathy/puget_sound_topobathy_utm30m_clean.tif"

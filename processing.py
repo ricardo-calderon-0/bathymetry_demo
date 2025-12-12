@@ -41,125 +41,94 @@ def clean_geometries(gdf: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
     gdf = gdf[gdf.geometry.is_valid].copy()
     return gdf
 
+def cdf_to_geotiff():
+    ds = xr.open_dataset(BATHY_RAW_PATH)
+    bathy = ds["Band1"]
+
+    # setting dimension names
+    bathy = bathy.rio.set_spatial_dims(x_dim='x', y_dim='y', inplace = False)
+    bathy = bathy.rio.write_crs("EPSG:32610", inplace=False)  # UTM zone 10N
+    print("In-memory CRS:", bathy.rio.crs)   # checking if geotiff will contain crs
+
+    #sanity_check
+    print(bathy.rio.crs)
+    print(bathy.rio.bounds())
+
+    # export as GeoTIFF
+    return bathy.rio.to_raster(BATHY_PATH, compress='LZW')
 
 # 1. Load bathymetry and HydroSHEDS, align, build topobathy
 def build_topobathy() -> Tuple[xr.DataArray, xr.DataArray]:
-    if not os.path.exists(BATHY_RAW_PATH):
-        raise FileNotFoundError(
-            f"Raw bathymetry not found at {BATHY_RAW_PATH}. "
-            "Place your GEBCO subset there or update BATHY_RAW_PATH in config.py."
-        )
-    # Load raw bathymetry
-    bathy_raw = rioxarray.open_rasterio(BATHY_RAW_PATH).squeeze()
-    print("Raw bathy CRS:", bathy_raw.rio.crs)
-    print("Raw bathy shape:", bathy_raw.shape)
-    print("Raw bathy bounds:", bathy_raw.rio.bounds())
+    # if not os.path.exists(BATHY_RAW_PATH):
+    #     raise FileNotFoundError(
+    #         f"Raw bathymetry not found at {BATHY_RAW_PATH}. "
+    #         "Place your GEBCO subset there or update BATHY_RAW_PATH in config.py."
+    #     )
+    # # Load raw bathymetry
+    # bathy_raw = rioxarray.open_rasterio(BATHY_RAW_PATH).squeeze()
+    # print("Raw bathy CRS:", bathy_raw.rio.crs)
+    # print("Raw bathy shape:", bathy_raw.shape)
+    # print("Raw bathy bounds:", bathy_raw.rio.bounds())
 
-    hydro = rioxarray.open_rasterio(HYDRO_PATH).squeeze()
-    hydro = hydro.rio.write_crs("EPSG:4326", inplace=False)
-    hydro = hydro.rio.write_nodata(HYDRO_NODATA, inplace=False)
+    # hydro = rioxarray.open_rasterio(HYDRO_PATH).squeeze()
+    # hydro = hydro.rio.write_crs("EPSG:4326", inplace=False)
+    # hydro = hydro.rio.write_nodata(HYDRO_NODATA, inplace=False)
 
-    hxmin, hymin, hxmax, hymax = hydro.rio.bounds()
-    bxmin, bymin, bxmax, bymax = bathy_raw.rio.bounds()
+    # hxmin, hymin, hxmax, hymax = hydro.rio.bounds()
+    # bxmin, bymin, bxmax, bymax = bathy_raw.rio.bounds()
 
-    print("Hydro bounds:", hxmin, hymin, hxmax, hymax)
-    print("Bathy raw bounds:", bxmin, bymin, bxmax, bymax)
+    # print("Hydro bounds:", hxmin, hymin, hxmax, hymax)
+    # print("Bathy raw bounds:", bxmin, bymin, bxmax, bymax)
 
-    # Compute intersection ROI
-    roi_minx = max(bxmin, hxmin)
-    roi_miny = max(bymin, hymin)
-    roi_maxx = min(bxmax, hxmax)
-    roi_maxy = min(bymax, hymax)
+    # # Compute intersection ROI
+    # roi_minx = max(bxmin, hxmin)
+    # roi_miny = max(bymin, hymin)
+    # roi_maxx = min(bxmax, hxmax)
+    # roi_maxy = min(bymax, hymax)
 
-    if (roi_minx >= roi_maxx) or (roi_miny >= roi_maxy):
-        raise RuntimeError(
-            "HydroSHEDS and raw bathymetry have no overlapping region.\n"
-            f"Hydro bounds: {hxmin, hymin, hxmax, hymax}\n"
-            f"Bathy bounds: {bxmin, bymin, bxmax, bymax}\n"
-            "Check that HYDRO_PATH and BATHY_RAW_PATH refer to matching tiles "
-            "(e.g., both 40–50N, 130–120W)."
-        )
+    # if (roi_minx >= roi_maxx) or (roi_miny >= roi_maxy):
+    #     raise RuntimeError(
+    #         "HydroSHEDS and raw bathymetry have no overlapping region.\n"
+    #         f"Hydro bounds: {hxmin, hymin, hxmax, hymax}\n"
+    #         f"Bathy bounds: {bxmin, bymin, bxmax, bymax}\n"
+    #         "Check that HYDRO_PATH and BATHY_RAW_PATH refer to matching tiles "
+    #         "(e.g., both 40–50N, 130–120W)."
+    #     )
 
-    bathy_raw_clipped = bathy_raw.rio.clip_box(
-        minx=roi_minx,
-        miny=roi_miny,
-        maxx=roi_maxx,
-        maxy=roi_maxy,
-    )
+    # bathy_raw_clipped = bathy_raw.rio.clip_box(
+    #     minx=roi_minx,
+    #     miny=roi_miny,
+    #     maxx=roi_maxx,
+    #     maxy=roi_maxy,
+    # )
 
-    print("Clipped bathy shape:", bathy_raw_clipped.shape)
-    print("Clipped bathy bounds:", bathy_raw_clipped.rio.bounds())
+    # print("Clipped bathy shape:", bathy_raw_clipped.shape)
+    # print("Clipped bathy bounds:", bathy_raw_clipped.rio.bounds())
 
-    # Reproject to a working UTM CRS
-    target_crs = "EPSG:32610"
+    # # Reproject to a working UTM CRS
+    # target_crs = "EPSG:32610"
 
-    bathy = bathy_raw_clipped.rio.reproject(
-        target_crs,
-        resampling=Resampling.bilinear,
-    )
+    # bathy = bathy_raw_clipped.rio.reproject(
+    #     target_crs,
+    #     resampling=Resampling.bilinear,
+    # )
 
-    print("Bathy (UTM) CRS:", bathy.rio.crs)
-    print("Bathy (UTM) shape:", bathy.shape)
-    print("Bathy (UTM) bounds:", bathy.rio.bounds())
+    # print("Bathy (UTM) CRS:", bathy.rio.crs)
+    # print("Bathy (UTM) shape:", bathy.shape)
+    # print("Bathy (UTM) bounds:", bathy.rio.bounds())
 
-    # Save UTM bathy as intermediate product
-    bathy.rio.to_raster(BATHY_PATH, compress="LZW")
-    print("Wrote UTM bathy:", BATHY_PATH)
+    # # Save UTM bathy as intermediate product
+    # bathy.rio.to_raster(BATHY_PATH, compress="LZW")
+    # print("Wrote UTM bathy:", BATHY_PATH)
 
-    # Load HydroSHEDS and align to bathy grid
-    hydro = rioxarray.open_rasterio(HYDRO_PATH).squeeze()
-    print("Hydro dims:", hydro.dims)
-    print("Hydro CRS before:", hydro.rio.crs)
-
-    hydro = hydro.rio.write_crs("EPSG:4326", inplace=False)
-    hydro = hydro.rio.write_nodata(HYDRO_NODATA, inplace=False)
-
-    hydro_utm = hydro.rio.reproject_match(
-        bathy,
-        resampling=Resampling.bilinear,
-    )
-
-    print("Hydro_utm CRS:", hydro_utm.rio.crs)
-    print("Hydro_utm shape:", hydro_utm.shape)
-
-    # Merge into topobathy
-    land_mask = hydro_utm > 0
-    topobathy = xr.where(land_mask, hydro_utm, bathy)
-
-    print("Topobathy stats:")
-    print("  min:", float(topobathy.min()))
-    print("  max:", float(topobathy.max()))
-
-    topobathy_clean = topobathy.where(topobathy != HYDRO_NODATA)
-    topobathy_clean = topobathy_clean.rio.write_nodata(HYDRO_NODATA, inplace=False)
-
-    print(
-        "Cleaned topobathy stats:",
-        float(topobathy_clean.min().values),
-        float(topobathy_clean.max().values),
-    )
-
-    topobathy_clean.rio.to_raster(TOPO_PATH, compress="LZW")
-    print("Wrote topobathy:", TOPO_PATH)
-
-    return bathy, topobathy_clean
-
-    # bathy = rioxarray.open_rasterio(BATHY_PATH).squeeze()
-    # print("Bathy CRS:", bathy.rio.crs)
-    # print("Bathy shape:", bathy.shape)
-    # print("Bathy res:", bathy.rio.resolution())
-    # print("Bathy bounds:", bathy.rio.bounds())
-
-    # # HydroSHEDS conditioned DEM (lat/lon)
+    # # Load HydroSHEDS and align to bathy grid
     # hydro = rioxarray.open_rasterio(HYDRO_PATH).squeeze()
     # print("Hydro dims:", hydro.dims)
     # print("Hydro CRS before:", hydro.rio.crs)
 
-    # # Set CRS and nodata for HydroSHEDS
     # hydro = hydro.rio.write_crs("EPSG:4326", inplace=False)
     # hydro = hydro.rio.write_nodata(HYDRO_NODATA, inplace=False)
 
-    # # Reproject HydroSHEDS to match bathy grid
     # hydro_utm = hydro.rio.reproject_match(
     #     bathy,
     #     resampling=Resampling.bilinear,
@@ -167,25 +136,15 @@ def build_topobathy() -> Tuple[xr.DataArray, xr.DataArray]:
 
     # print("Hydro_utm CRS:", hydro_utm.rio.crs)
     # print("Hydro_utm shape:", hydro_utm.shape)
-    # print("Hydro_utm bounds:", hydro_utm.rio.bounds())
 
-    # # Land mask and merged topobathy
+    # # Merge into topobathy
     # land_mask = hydro_utm > 0
-    # print("Land mask type:", land_mask.dtype)
-
-    # topobathy = xr.where(
-    #     land_mask,
-    #     hydro_utm,  # land elevations (if any)
-    #     bathy,      # underwater bathymetry
-    # )
+    # topobathy = xr.where(land_mask, hydro_utm, bathy)
 
     # print("Topobathy stats:")
     # print("  min:", float(topobathy.min()))
     # print("  max:", float(topobathy.max()))
-    # print("Hydro_utm stats:", float(hydro_utm.min()), float(hydro_utm.max()))
-    # print("Bathy stats:", float(bathy.min()), float(bathy.max()))
 
-    # # Clean nodata from topobathy
     # topobathy_clean = topobathy.where(topobathy != HYDRO_NODATA)
     # topobathy_clean = topobathy_clean.rio.write_nodata(HYDRO_NODATA, inplace=False)
 
@@ -199,6 +158,62 @@ def build_topobathy() -> Tuple[xr.DataArray, xr.DataArray]:
     # print("Wrote topobathy:", TOPO_PATH)
 
     # return bathy, topobathy_clean
+
+    bathy = rioxarray.open_rasterio(BATHY_PATH).squeeze()
+    print("Bathy CRS:", bathy.rio.crs)
+    print("Bathy shape:", bathy.shape)
+    print("Bathy res:", bathy.rio.resolution())
+    print("Bathy bounds:", bathy.rio.bounds())
+
+    # HydroSHEDS conditioned DEM (lat/lon)
+    hydro = rioxarray.open_rasterio(HYDRO_PATH).squeeze()
+    print("Hydro dims:", hydro.dims)
+    print("Hydro CRS before:", hydro.rio.crs)
+
+    # Set CRS and nodata for HydroSHEDS
+    hydro = hydro.rio.write_crs("EPSG:4326", inplace=False)
+    hydro = hydro.rio.write_nodata(HYDRO_NODATA, inplace=False)
+
+    # Reproject HydroSHEDS to match bathy grid
+    hydro_utm = hydro.rio.reproject_match(
+        bathy,
+        resampling=Resampling.bilinear,
+    )
+
+    print("Hydro_utm CRS:", hydro_utm.rio.crs)
+    print("Hydro_utm shape:", hydro_utm.shape)
+    print("Hydro_utm bounds:", hydro_utm.rio.bounds())
+
+    # Land mask and merged topobathy
+    land_mask = hydro_utm > 0
+    print("Land mask type:", land_mask.dtype)
+
+    topobathy = xr.where(
+        land_mask,
+        hydro_utm,  # land elevations (if any)
+        bathy,      # underwater bathymetry
+    )
+
+    print("Topobathy stats:")
+    print("  min:", float(topobathy.min()))
+    print("  max:", float(topobathy.max()))
+    print("Hydro_utm stats:", float(hydro_utm.min()), float(hydro_utm.max()))
+    print("Bathy stats:", float(bathy.min()), float(bathy.max()))
+
+    # Clean nodata from topobathy
+    topobathy_clean = topobathy.where(topobathy != HYDRO_NODATA)
+    topobathy_clean = topobathy_clean.rio.write_nodata(HYDRO_NODATA, inplace=False)
+
+    print(
+        "Cleaned topobathy stats:",
+        float(topobathy_clean.min().values),
+        float(topobathy_clean.max().values),
+    )
+
+    topobathy_clean.rio.to_raster(TOPO_PATH, compress="LZW")
+    print("Wrote topobathy:", TOPO_PATH)
+
+    return bathy, topobathy_clean
 
 
 # 2. HydroBASINS: clip to bathy extent, find outlets, hydrology

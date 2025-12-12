@@ -37,7 +37,7 @@ def plot_qc_map(
     reef_ll = clean_geometries(reef_gdf.to_crs(PLOT_CRS))
     outlets_ll = clean_geometries(outlets.to_crs(PLOT_CRS))
 
-    fig, ax = plt.subplots(figsize=(10, 8))
+    fig, ax = plt.subplots(figsize=(6, 8))
 
     depth_ll = topo_ll.values
     depth_ll = np.where(depth_ll == HYDRO_NODATA, np.nan, depth_ll)

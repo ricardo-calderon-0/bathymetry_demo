@@ -2,7 +2,7 @@
 import os
 
 # Paths
-BATHY_RAW_PATH = "data/raw/bathymetry/gebco_2025_n50.0_s40.0_w-130.0_e-120.0.tif"
+BATHY_RAW_PATH = "data/raw/bathymetry/puget_sound_p290_30m.nc"
 BATHY_PATH = "data/intermediate/bathymetry/puget_sound_bathy_utm.tif"
 HYDRO_PATH = "data/raw/hydrosheds/n40w130_con.tif"
 BASINS_PATH = "data/raw/hydrobasins/hybas_na_lev06_v1c.shp"
